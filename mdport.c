@@ -83,9 +83,9 @@
 
 #include <curses.h> /* AIX requires curses.h be included before term.h */
 
-#if defined(HAVE_TERM_H)
+#if defined(HAVE_TERM_H) && !defined(XR_SHIM)
 #include <term.h>
-#elif defined(HAVE_NCURSES_TERM_H)
+#elif defined(HAVE_NCURSES_TERM_H) && !defined(XR_SHIM)
 #include <ncurses/term.h>
 #endif
 
@@ -373,7 +373,9 @@ md_normaluser(void)
 	gid_t realgid = getgid();
 	uid_t realuid = getuid();
 
-#if defined(HAVE_SETRESGID)
+#if defined(__EMSCRIPTEN__)	/* RVIP: no users in the browser */
+    if (0) {
+#elif defined(HAVE_SETRESGID)
     if (setresgid(-1, realgid, realgid) != 0) {
 #elif defined (HAVE_SETREGID) 
     if (setregid(realgid, realgid) != 0) {
@@ -386,7 +388,9 @@ md_normaluser(void)
 		exit(1);
     }
 
-#if defined(HAVE_SETRESUID)
+#if defined(__EMSCRIPTEN__)
+    if (0) {
+#elif defined(HAVE_SETRESUID)
     if (setresuid(-1, realuid, realuid) != 0) {
 #elif defined(HAVE_SETREUID)
     if (setreuid(realuid, realuid) != 0) {
@@ -479,7 +483,9 @@ md_gethomedir(void)
     struct passwd *pw;
     pw = getpwuid(getuid());
 
-    h = pw->pw_dir;
+    h = getenv("HOME");         /* RVIP: $HOME first, so play.sh can move saves */
+    if (h == NULL || *h == '\0')
+        h = pw->pw_dir;
 
     if (strcmp(h,"/") == 0)
         h = NULL;
@@ -1126,6 +1132,21 @@ md_readchar(WINDOW *win)
     int mode2 = M_NORMAL;
     int nodelayf = 0;
     int count = 0;
+#ifdef XR_SHIM
+    /* curses shim (port/): keys arrive decoded, no escape sequences */
+    switch (ch = wgetch(win)) {
+        case KEY_LEFT:  return 'h';
+        case KEY_RIGHT: return 'l';
+        case KEY_UP:    return 'k';
+        case KEY_DOWN:  return 'j';
+        case KEY_HOME:  case KEY_A1: return 'y';
+        case KEY_PPAGE: case KEY_A3: return 'u';
+        case KEY_END:   case KEY_C1: return 'b';
+        case KEY_NPAGE: case KEY_C3: return 'n';
+        case KEY_B2:    return '.';
+    }
+    return ch;
+#endif
 
     for(;;)
     {

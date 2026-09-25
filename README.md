@@ -1,0 +1,17 @@
+# Rogue 5.4 — RVIP port
+
+Upstream: Rogue 5.4.5 (Toy, Arnold, Wichman; rogueforge), from the Roguelike
+Restoration Project: https://github.com/RoguelikeRestorationProject/rogue5.4/tree/9d0dccc
+
+**Our changes:** https://github.com/memmaker/rogue5.4/compare/9d0dccc...master
+(commit 1 is the untouched upstream; everything after it is ours).
+
+- `port:` builds on macOS/arm64 and WebAssembly: prototypes, 64-bit fixes
+  (daemon arguments, 4-byte longs in saves), curses shim (`port/`) with an X11
+  frontend, NetHack tiles (`port/mktiles.py`).
+- `RVIP:` auto-explore (`x`), `<`/`>` walk to known stairs, Enter command
+  menu, inventory with a cursor, sound events (`rvip.c` + small hooks).
+- `web:` browser build (`web/build.sh`), played at https://ruzzoli.de/roguelikes/rogue54/
+
+Build: `./configure && make rogue54-x11` (XQuartz), `./play.sh`; web: `sh web/build.sh`, `web/deploy.sh`.
+Notes for the next person: `HANDOVER.md`. Process: `~/Games/RVIP.md`, `~/Games/rogue2wasm.md`.

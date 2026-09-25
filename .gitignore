@@ -1,0 +1,16 @@
+
+# RVIP port: build output, binaries, local saves
+web/dist/
+/rogue54
+/rogue54-x11
+*.dSYM/
+*.o
+Makefile
+config.h
+config.log
+config.status
+rogue.6
+rogue.cat
+rogue.doc
+rogue.html
+rogue.me

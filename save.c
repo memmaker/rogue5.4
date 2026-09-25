@@ -131,20 +131,30 @@ auto_save(int sig)
  */
 
 void
-save_file(FILE *savef)
+save_state(FILE *savef)	/* RVIP: write and close, keep playing (web autosave) */
 {
     char buf[80];
-    mvcur(0, COLS - 1, LINES - 1, 0); 
-    putchar('\n');
-    endwin();
-    resetltchars();
-    md_chmod(file_name, 0400);
     encwrite(version, strlen(version)+1, savef);
     sprintf(buf,"%d x %d\n", LINES, COLS);
     encwrite(buf,80,savef);
     rs_save_file(savef);
     fflush(savef);
     fclose(savef);
+}
+
+void
+save_file(FILE *savef)
+{
+    mvcur(0, COLS - 1, LINES - 1, 0); 
+    putchar('\n');
+#ifdef __EMSCRIPTEN__
+    wc_saved = TRUE;		/* keep the file (be_web.c) */
+#else
+    md_chmod(file_name, 0400);
+#endif
+    save_state(savef);
+    endwin();
+    resetltchars();
     exit(0);
 }
 
@@ -204,6 +214,7 @@ restore(const char *file)
     }
 
     hw = newwin(LINES, COLS, 0, 0);
+    wc_mapwin = stdscr;
     setup();
 
     rs_restore_file(inf);
@@ -213,6 +224,9 @@ restore(const char *file)
      */
 
     if (
+#ifdef __EMSCRIPTEN__		/* web: kept as the autosave, removed at game end */
+	0 &&
+#endif
 #ifdef MASTER
 	!wizard &&
 #endif

@@ -108,6 +108,11 @@ main(int argc, char **argv)
     if (argc == 2)
 	if (!restore(argv[1]))	/* Note: restore will never return */
 	    my_exit(1);
+#ifdef __EMSCRIPTEN__
+    /* web: continue the autosave */
+    if (argc < 2 && access(file_name, 0) == 0 && !restore(file_name))
+	my_exit(1);
+#endif
 #ifdef MASTER
     if (wizard)
 	printf("Hello %s, welcome to dungeon #%d", whoami, dnum);
@@ -139,6 +144,7 @@ main(int argc, char **argv)
      * Set up windows
      */
     hw = newwin(LINES, COLS, 0, 0);
+    wc_mapwin = stdscr;
     idlok(stdscr, TRUE);
     idlok(hw, TRUE);
 #ifdef MASTER

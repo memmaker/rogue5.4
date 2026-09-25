@@ -776,3 +776,14 @@ void	whatis(int insist, int type);
 void	wield(void);
 int	wreadchar(WINDOW *win);
 
+
+/* RVIP port (rvip.c, port/) */
+#ifndef XR_SHIM
+#define be_sound(event) ((void) 0)
+#endif
+extern int explore_mode;
+int	explore_step(void), explore_stairs(int), monster_in_view(void), cmd_menu(void), inv_menu(void);
+int	menu(char *title, char **items, char *keys, int n);
+void	explore_reset(void), save_state(FILE *savef);
+extern THING *inv_pick;
+extern int inv_again;

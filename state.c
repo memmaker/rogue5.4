@@ -660,13 +660,13 @@ rs_read_daemons(FILE *savef, struct delayed_action *dlist, int cnt)
             default:dlist[i].d_func = NULL;
                     break;
         }
-    }
 
-    if (dlist[i].d_func == NULL)
-    {
-        dlist[i].d_type = 0;
-        dlist[i].d_arg = 0;
-        dlist[i].d_time = 0;
+        if (dlist[i].d_func == NULL)	/* RVIP: was after the loop (d_list[cnt]) */
+        {
+            dlist[i].d_type = 0;
+            dlist[i].d_arg = 0;
+            dlist[i].d_time = 0;
+        }
     }
 }       
         
