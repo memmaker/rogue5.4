@@ -4,8 +4,8 @@ DawnBringer) as sheeted by Rogue Collection (github.com/mikeyk730/Rogue-Collecti
 res/tilemap_v*.bmp: 26 monsters A-Z, then player, walls, items; 16x16).
 
 Writes tiles-dawn.png/.rgba with the same slot layout as tiles.png (mktiles.py),
-so the game picks either sheet without code changes: every slot the Rogue
-Collection sheet covers is replaced, the rest stays NetHack.
+so the game picks either sheet without code changes. Every slot the game can
+show is replaced (the two sets never mix); the rest are other variants' chars.
 Usage: mkdawn.py <tilemap_vN.bmp>   (v1: Rogue 3.6/5.2/5.3 monsters, v2: 5.4, v4: PC 1.48)"""
 import os, re, sys
 from PIL import Image
@@ -28,7 +28,7 @@ for k, i in (('TL', 27), ('TR', 28), ('BL', 29), ('BR', 30), ('HWALL', 31), ('VW
              ('FLOOR', 33), ('CORR', 34), ('HDOOR', 35), ('VDOOR', 35)):
     put(dfn('T_' + k), i)
 terr, gen = arr('terrain_tile'), arr('generic_tile')
-for ch, i in (('%', 36), ('^', 37), ('.', 33), ('#', 34), ('+', 35)):
+for ch, i in (('%', 36), ('^', 37), ('.', 33), ('#', 34), ('+', 35), ('$', 47)):  # $: detected magic
     put(terr[ord(ch)], i)
 for ch, i in ((',', 38), (':', 39), ('*', 40), ('!', 41), ('=', 42), ('?', 43), ('/', 44), (')', 45), (']', 46)):
     put(gen[ord(ch)], i)
