@@ -18,4 +18,4 @@ via Rogue Collection; `port/mkdawn.py`, credits in `port/dawnhack/CREDITS.txt`).
 desktop: `TILESET=dawn ./play.sh` or `echo dawn > save/tileset`.
 
 Build: `./configure && make rogue54-x11` (XQuartz), `./play.sh`; web: `sh web/build.sh`, `web/deploy.sh`.
-Notes for the next person: `HANDOVER.md`. Process: `~/Games/RVIP.md`, `~/Games/rogue2wasm.md`.
+Notes for the next person: `HANDOVER.md`. Process: `~/Games/rvip-tools/RVIP.md`, `~/Games/rogue2wasm.md`.
