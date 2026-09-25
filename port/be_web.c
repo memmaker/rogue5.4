@@ -24,8 +24,33 @@ void be_cursor(int p, int y, int x) { js_cursor(p, y, x); }
 void be_popup(int rows, int cols) { js_popup(rows, cols); }
 void be_sound(const char *s) { if (*s) js_sound(s); }
 
+/* Visible window (RVIP 5b): monsters and objects drawn on the player's
+ * view right now (invisible monsters and mimics fail the screen check) */
+EM_JS(void, js_vis, (const char *s), { if (Module.xr.vis) Module.xr.vis(UTF8ToString(s)); });
+static void send_visible(void)
+{
+    static char buf[4096];
+    int n = 0, cy, cx;
+    THING *l;
+    getyx(stdscr, cy, cx);
+    for (l = mlist; l != NULL && n < 3900; l = next(l)) {
+        THING *tp = (l);
+        if ((mvwinch(stdscr, tp->t_pos.y, tp->t_pos.x) & 0xff) == (tp->t_type & 0xff))
+            n += snprintf(buf + n, sizeof buf - n, "M%c%s\n", tp->t_type, monsters[tp->t_type - 'A'].m_name);
+    }
+    for (l = lvl_obj; l != NULL && n < 3900; l = next(l)) {
+        THING *o = (l);
+        if ((mvwinch(stdscr, o->o_pos.y, o->o_pos.x) & 0xff) == (o->o_type & 0xff))
+            n += snprintf(buf + n, sizeof buf - n, "I%c\n", o->o_type);
+    }
+    wmove(stdscr, cy, cx);
+    buf[n] = 0;
+    js_vis(buf);
+}
+
 void be_flush(void)
 {
+    send_visible();
     /* town music on the trading post and the outside levels */
     js_flush(level, 0, hero.y - 1, hero.x);
 }
