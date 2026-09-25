@@ -44,6 +44,7 @@ wear(void)
     cur_armor = obj;
     if (!terse)
 	addmsg("you are now ");
+    be_sound("wield");
     msg("wearing %s", sp);
 }
 

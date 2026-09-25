@@ -27,6 +27,7 @@ new_level(void)
     int *sp;
     int i;
 
+    explore_reset();
     player.t_flags &= ~ISHELD;	/* unhold when you go down just in case */
     if (level > max_level)
 	max_level = level;

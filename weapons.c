@@ -252,6 +252,7 @@ bad:
     cur_weapon = obj;
     if (!terse)
 	addmsg("you are now ");
+    be_sound("wield");
     msg("wielding %s (%c)", sp, obj->o_packch);
 }
 

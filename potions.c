@@ -68,6 +68,7 @@ quaff(void)
      */
     if (obj == NULL)
 	return;
+    be_sound("quaff");
     if (obj->o_type != POTION)
     {
 	if (!terse)

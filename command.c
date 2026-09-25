@@ -74,9 +74,20 @@ command(void)
 		ch = runch;
 	    else if (count)
 		ch = countch;
+	    else if (explore_mode && (ch = explore_step()) != 0)
+		;
 	    else
 	    {
-		ch = readchar();
+		inv_pick = NULL;
+		if (inv_again && !(inv_again = 0) && !monster_in_view())
+		    ch = 'i';	/* reopen the inventory (RVIP 3c) */
+		else {
+		    wc_cmd_prompt = 1;	/* web autosave may run now */
+		    ch = readchar();
+		    wc_cmd_prompt = 0;
+		}
+		if (ch == '\r' || ch == '\n') ch = cmd_menu();
+		if (ch == 'i') ch = inv_menu();
 		move_on = FALSE;
 		if (mpos != 0)		/* Erase message if its there */
 		{
@@ -180,7 +191,7 @@ over:
                         endmsg();
 		    }
 		}
-		when '!': shell();
+		when '!': after = FALSE; msg("there is no shell here");
 		when 'h': do_move(0, -1);
 		when 'j': do_move(1, 0);
 		when 'k': do_move(-1, 0);
@@ -276,8 +287,9 @@ over:
 		when 'R': ring_off();
 		when 'o': option(); after = FALSE;
 		when 'c': call(); after = FALSE;
-		when '>': after = FALSE; d_level();
-		when '<': after = FALSE; u_level();
+		when '>': after = FALSE; if (explore_stairs('>')) d_level();
+		when '<': after = FALSE; if (explore_stairs('<')) u_level();
+		when 'x': after = FALSE; explore_mode = 'x';
 		when '?': after = FALSE; help();
 		when '/': after = FALSE; identify();
 		when 's': search();
@@ -673,6 +685,7 @@ d_level(void)
     {
 	level++;
 	seenstairs = FALSE;
+	be_sound("stairs_down");
 	new_level();
     }
 }
@@ -690,6 +703,7 @@ u_level(void)
 	if (amulet)
 	{
 	    level--;
+	    be_sound("stairs_up");
 	    if (level == 0)
 		total_winner();
 	    new_level();

@@ -171,6 +171,7 @@ stomach(void)
 	else if (food_left < 2 * MORETIME && oldfood >= 2 * MORETIME)
 	{
 	    hungry_state = 1;
+	    be_sound("hungry");
 	    if (terse)
 		msg(choose_str("getting the munchies", "getting hungry"));
 	    else

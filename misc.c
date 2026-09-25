@@ -285,6 +285,7 @@ eat(void)
 
     if ((obj = get_item("eat", FOOD)) == NULL)
 	return;
+    be_sound("eat");
     if (obj->o_type != FOOD)
     {
 	if (!terse)
@@ -335,6 +336,7 @@ check_level(void)
 	add = roll(i - olevel, 10);
 	max_hp += add;
 	pstats.s_hpt += add;
+	be_sound("level");
 	msg("welcome to level %d", i);
     }
 }

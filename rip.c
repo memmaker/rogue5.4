@@ -237,6 +237,7 @@ death(int monst)
     time_t date;
 
     signal(SIGINT, SIG_IGN);
+    be_sound("death");
     purse -= purse / 10;
     signal(SIGINT, leave);
     clear();

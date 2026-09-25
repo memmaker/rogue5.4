@@ -201,6 +201,7 @@ teleport(void)
 {
     coord c;
 
+    be_sound("teleport");
     mvaddch(hero.y, hero.x, floor_at());
     find_floor(NULL, &c, FALSE, TRUE);
     if (roomin(&c) != proom)

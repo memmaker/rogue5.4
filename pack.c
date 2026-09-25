@@ -415,6 +415,40 @@ get_item(const char *purpose, int type)
 	    return last_pick;
 	else
 	    msg("you ran out");
+    else if (inv_pick)		/* RVIP 3c: chosen in the inventory */
+    {
+	obj = inv_pick;
+	inv_pick = NULL;
+	return obj;
+    }
+    else if (purpose)		/* RVIP 3c: a list with a cursor */
+    {
+	THING *it[MAXPACK + 30];
+	char *items[MAXPACK + 30], keys[MAXPACK + 30], text[MAXPACK + 30][MAXSTR];
+	char title[MAXSTR];
+	int n = 0, i, all;
+
+	for (all = 0; all < 2 && n == 0; all++)
+	    for (obj = pack; obj != NULL && n < MAXPACK + 30; obj = next(obj))
+		if (all || type <= 0 || obj->o_type == type)
+		{
+		    sprintf(text[n], "%c) %s", obj->o_packch, inv_name(obj, FALSE));
+		    items[n] = text[n]; keys[n] = obj->o_packch; it[n++] = obj;
+		}
+	sprintf(title, "%s what?", purpose);
+	title[0] = toupper(title[0]);
+	i = menu(title, items, keys, n);
+	touchwin(stdscr);		/* closes the list */
+	refresh();
+	if (i < 0)
+	{
+	    reset_last();
+	    after = FALSE;
+	    msg("");
+	    return NULL;
+	}
+	return it[i];
+    }
     else
     {
 	for (;;)
@@ -480,6 +514,7 @@ money(int value)
     {
 	if (!terse)
 	    addmsg("you found ");
+	be_sound("money1");
 	msg("%d gold pieces", value);
     }
 }

@@ -166,6 +166,7 @@ drop(void)
     obj->o_pos = hero;
     if (obj->o_type == AMULET)
 	amulet = FALSE;
+    be_sound("drop");
     msg("dropped %s", inv_name(obj, TRUE));
 }
 

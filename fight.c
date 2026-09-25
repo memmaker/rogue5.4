@@ -528,6 +528,7 @@ hit(const char *er, const char *ee, int noend)
     int i;
     const char *s;
 
+    be_sound(er == NULL ? "hit" : ee == NULL ? "mon_hit" : "");
     if (to_death)
 	return;
     addmsg(prname(er, TRUE));
@@ -556,6 +557,7 @@ miss(const char *er, const char *ee, int noend)
 {
     int i;
 
+    if (er == NULL) be_sound("miss");
     if (to_death)
 	return;
     addmsg(prname(er, TRUE));
@@ -665,6 +667,7 @@ killed(THING *tp, int pr)
     remove_mon(&tp->t_pos, tp, TRUE);
     if (pr)
     {
+	be_sound("kill");
 	if (has_hit)
 	{
 	    addmsg(".  Defeated ");
