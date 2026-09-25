@@ -10,6 +10,8 @@
 #include <string.h>
 #include "rogue.h"
 
+int auto_more = 1;	/* RVIP: --More-- does not wait; the Messages pane keeps the history */
+
 /*
  * msg:
  *	Display a message at the top of the screen.
@@ -76,7 +78,9 @@ endmsg(void)
 	look(FALSE);
 	mvaddstr(0, mpos, "--More--");
 	refresh();
-	if (!msg_esc)
+	if (auto_more)
+	    ;
+	else if (!msg_esc)
 	    wait_for(stdscr, ' ');
 	else
 	{
