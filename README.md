@@ -6,9 +6,9 @@ Restoration Project: https://github.com/RoguelikeRestorationProject/rogue5.4/tre
 **Our changes:** https://github.com/memmaker/rogue5.4/compare/9d0dccc...master
 (commit 1 is the untouched upstream; everything after it is ours).
 
-- `port:` builds on macOS/arm64 and WebAssembly: prototypes, 64-bit fixes
-  (daemon arguments, 4-byte longs in saves), curses shim (`port/`) with an X11
-  frontend, NetHack tiles (`port/mktiles.py`).
+- `port:` builds on macOS/arm64 and WebAssembly, curses shim (`port/`) with
+  an X11 frontend, NetHack tiles (`port/mktiles.py`); fixes an upstream
+  out-of-bounds write when restoring a save (`rs_read_daemons`).
 - `RVIP:` auto-explore (`x`), `<`/`>` walk to known stairs, Enter command
   menu, inventory with a cursor, sound events (`rvip.c` + small hooks).
 - `web:` browser build (`web/build.sh`), played at https://ruzzoli.de/roguelikes/rogue54/
