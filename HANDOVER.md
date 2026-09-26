@@ -18,3 +18,8 @@ Ported after the Advanced Rogue line (`~/Games/arogue7.7`, `arogue5.8`,
   (one past the end, ASan). Moved into the loop.
 - Web: `md_normaluser()` must not call setgid/setuid (fails in the browser).
 - No town, so no music; sound effects only.
+- Prompt line (RVIP step 5 / W4, 2026-09-26): the live message row is shown in a
+  box over the map by `RvipWM.prompt` (rvip-wm.js). A key hides it only while
+  the game waits for a command, so a question stays up until answered.
+  Here: `be_prompt(r)` from `msg_refresh()` in `port/wcurses.c` (row 0 text),
+  `js_key(wc_cmd_prompt)` in `port/be_web.c`; `be_x11.c` has an empty stub.
