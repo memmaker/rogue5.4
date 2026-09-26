@@ -317,6 +317,7 @@ quit(int sig)
 	mvprintw(LINES - 2, 0, "You quit with %d gold pieces", purse);
 	move(LINES - 1, 0);
 	refresh();
+	be_run_end("quit", NULL, purse);
 	score(purse, 1, 0);
 	my_exit(0);
     }

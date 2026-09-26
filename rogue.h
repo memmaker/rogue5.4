@@ -780,6 +780,7 @@ int	wreadchar(WINDOW *win);
 /* RVIP port (rvip.c, port/) */
 #ifndef XR_SHIM
 #define be_sound(event) ((void) 0)
+#define be_run_end(ev, killer, score) ((void) 0)
 #endif
 extern int explore_mode;
 int	explore_step(void), explore_stairs(int), monster_in_view(void), cmd_menu(void), inv_menu(void);

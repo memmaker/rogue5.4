@@ -242,6 +242,7 @@ death(int monst)
     signal(SIGINT, leave);
     clear();
     killer = killname(monst, FALSE);
+    be_run_end("death", killer, purse);
     if (!tombstone)
     {
 	mvprintw(LINES - 2, 0, "Killed by ");
@@ -383,6 +384,7 @@ total_winner(void)
     }
     printw("   %5d  Gold Pieces          ", oldpurse);
     refresh();
+    be_run_end("win", NULL, purse);
     score(purse, 2, ' ');
     my_exit(0);
 }
