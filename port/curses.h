@@ -27,6 +27,7 @@ typedef char bool;
 typedef struct _win {
     int maxy, maxx, begy, begx, cury, curx;
     int clear;          /* clearok */
+    int ext_c, ext_r;   /* extent last sent with be_extent() */
     short *first, *last;/* changed range per line, -1 = none */
     chtype *c;
     const char **fg;    /* row colour (css) set by the game, NULL = default */
@@ -158,7 +159,8 @@ int wc_obj_tile(union thing *o);
 void be_invfg(int y, const char *css, int tile);   /* inventory row colour and icon */
 void be_rowfg(int p, int y, const char *css);      /* pop-up row colour */
 int wc_rowfg(WINDOW *w, int y, const char *css);
-int be_icons(void);                                /* item icons shown in the Inventory pane */
+int be_icons(void);
+void be_extent(int p, int cols, int rows); /* text pane trimmed: cells in use (RVIP W0) */                                /* item icons shown in the Inventory pane */
 void wc_inv(WINDOW *);                            /* tiles.c */
 extern WINDOW *wc_mapwin;  /* the game's map window (cw) */
 extern int wc_cmd_prompt;  /* waiting for a command key */
