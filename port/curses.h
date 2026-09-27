@@ -151,7 +151,11 @@ void be_end(void);
 int  tile_for(int y, int x, int ch, int *under);  /* tiles.c: -1 = text */
 struct wc_kind { int type; const char *name, *css; };
 const struct wc_kind *wc_kind(int type);         /* tiles.c */
-void be_invfg(int y, const char *css);   /* inventory row colour */
+int wc_mon_tile(int ch);
+union thing;
+int wc_obj_tile(union thing *o);
+void be_invfg(int y, const char *css, int tile);   /* inventory row colour and icon */
+int be_icons(void);                                /* item icons shown in the Inventory pane */
 void wc_inv(WINDOW *);                            /* tiles.c */
 extern WINDOW *wc_mapwin;  /* the game's map window (cw) */
 extern int wc_cmd_prompt;  /* waiting for a command key */

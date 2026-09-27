@@ -31,6 +31,14 @@ static int obj_tile(THING *o)
     return -1;
 }
 
+int wc_mon_tile(int ch) { return isupper(ch) ? mon_tile[ch - 'A'] : -1; }
+
+int wc_obj_tile(THING *o)
+{
+    int t = obj_tile(o);
+    return t >= 0 ? t : o->o_type < 128 ? generic_tile[o->o_type] : -1;
+}
+
 /* Neighbours come from the level map (places[]), so a monster or the
    player standing next to a wall does not change its shape. */
 static int real(int y, int x)
@@ -141,16 +149,17 @@ void wc_inv(WINDOW *p)
 {
     char save[2 * MAXSTR];
     THING *l;
-    int y = 0, ch = 'a';
+    int y = 0, ch = 'a', ic = be_icons();
 
     memcpy(save, prbuf, sizeof save);
     for (l = pack; l && y < p->maxy - 1; l = next(l), y++) {
         ch = l->o_packch;
-        mvwprintw(p, y, 0, "%c) %s", ch, inv_name(l, FALSE));
+        if (ic) mvwprintw(p, y, 0, "%c)   %s", ch, inv_name(l, FALSE));  /* cols 2-4: icon */
+        else mvwprintw(p, y, 0, "%c) %c %s", ch, l->o_type, inv_name(l, FALSE));
         wclrtoeol(p);
-        be_invfg(y, wc_kind(l->o_type)->css);
+        be_invfg(y, wc_kind(l->o_type)->css, ic ? wc_obj_tile(l) : -1);
     }
-    for (; y < p->maxy; y++) { be_invfg(y, ""); if (y < p->maxy - 1) { wmove(p, y, 0); wclrtoeol(p); } }
+    for (; y < p->maxy; y++) { be_invfg(y, "", -1); if (y < p->maxy - 1) { wmove(p, y, 0); wclrtoeol(p); } }
     mvwprintw(p, y, 0, "%d/%d items, %d gold", inpack, MAXPACK, purse);
     wclrtoeol(p);
     memcpy(prbuf, save, sizeof save);
