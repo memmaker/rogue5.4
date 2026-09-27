@@ -29,6 +29,7 @@ typedef struct _win {
     int clear;          /* clearok */
     short *first, *last;/* changed range per line, -1 = none */
     chtype *c;
+    const char **fg;    /* row colour (css) set by the game, NULL = default */
 } WINDOW;
 
 extern WINDOW *stdscr, *curscr;
@@ -155,6 +156,8 @@ int wc_mon_tile(int ch);
 union thing;
 int wc_obj_tile(union thing *o);
 void be_invfg(int y, const char *css, int tile);   /* inventory row colour and icon */
+void be_rowfg(int p, int y, const char *css);      /* pop-up row colour */
+int wc_rowfg(WINDOW *w, int y, const char *css);
 int be_icons(void);                                /* item icons shown in the Inventory pane */
 void wc_inv(WINDOW *);                            /* tiles.c */
 extern WINDOW *wc_mapwin;  /* the game's map window (cw) */

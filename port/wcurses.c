@@ -27,6 +27,7 @@ WINDOW *newwin(int rows, int cols, int by, int bx)
     w->c = malloc(sizeof(chtype) * rows * cols);
     w->first = malloc(sizeof(short) * rows);
     w->last = malloc(sizeof(short) * rows);
+    w->fg = calloc(rows, sizeof *w->fg);
     werase(w);
     w->clear = 0;
     return w;
@@ -35,7 +36,7 @@ WINDOW *newwin(int rows, int cols, int by, int bx)
 int delwin(WINDOW *w)
 {
     if (!w) return ERR;
-    free(w->c); free(w->first); free(w->last); free(w);
+    free(w->c); free(w->first); free(w->last); free(w->fg); free(w);
     return OK;
 }
 
@@ -178,9 +179,12 @@ int werase(WINDOW *w)
 {
     int i;
     for (i = 0; i < w->maxy * w->maxx; i++) w->c[i] = ' ';
+    memset(w->fg, 0, sizeof *w->fg * w->maxy);
     w->cury = w->curx = 0;
     return touchwin(w);
 }
+
+int wc_rowfg(WINDOW *w, int y, const char *css) { if (y < 0 || y >= w->maxy) return ERR; w->fg[y] = css; return OK; }
 
 int wclear(WINDOW *w) { werase(w); w->clear = 1; return OK; }
 int clearok(WINDOW *w, int b) { w->clear = b; return OK; }
@@ -383,6 +387,7 @@ static void pop_refresh(WINDOW *w)
     }
     for (y = y0; y <= y1; y++)
         for (x = x0; x <= x1; x++) pset(pn[P_POP], y - y0, x - x0, w->c[y * w->maxx + x]);
+    for (y = y0; y <= y1; y++) be_rowfg(P_POP, y - y0, w->fg[y] ? w->fg[y] : "");
     if (w->cury >= y0 && w->cury <= y1 && w->curx >= x0 && w->curx <= x1)
         be_cursor(P_POP, w->cury - y0, w->curx - x0);
     else be_cursor(-1, 0, 0);
