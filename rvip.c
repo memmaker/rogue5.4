@@ -182,7 +182,7 @@ explore_step()
     if ((mode == '<' || mode == '>') &&
         chat(hero.y, hero.x) == STAIRS) {
         explore_mode = 0;
-        return mode;                /* take them */
+        return 0;                   /* arrived; the player takes them */
     }
 
     memset(from, -1, sizeof from);
@@ -239,9 +239,9 @@ int key;
 
 /* groups of the help list, each starting at the key in grp_start[] */
 static char *cmd_groups[] = {
-    "Help", "Move and run", "Explore and act", "Items", "Information", "Game"
+    "Help", "Explore and act", "Items", "Information", "Game"
 };
-static int grp_start[] = { '?', 'h', 'x', ',', ')', CTRL('R') };
+static int grp_start[] = { '?', 'x', ',', ')', CTRL('R') };  /* moves (h..N) are left out */
 #define NGRP (sizeof grp_start / sizeof grp_start[0])
 
 /* Arrow keys / numpad 8 2 move, Enter / 5 / Space / 6 choose, Esc / 4 / 0
@@ -303,6 +303,8 @@ cmd_menu()
         if ((g = menu("Commands", gi, gk, NGRP)) < 0) break;
         for (grp = -1, n = 0, h = helpstr; h->h_desc && n < 80; h++) {
             if (!h->h_ch) continue;         /* text-only lines */
+            if (strchr("hjklyubnHJKLYUBN", h->h_ch) ||     /* moves and runs: keys, not menu items */
+                (h->h_ch < ' ' && strchr("hjklyubn", h->h_ch | 0x60))) continue;
             if (grp + 1 < (int)NGRP && h->h_ch == grp_start[grp + 1]) grp++;
             if (grp != g || h->h_ch == '\r' || h->h_ch == ESC) continue;
             {

@@ -98,16 +98,12 @@ static void autosave(void)
 
 int be_getkey(int wait)
 {
-    static double last;
     int k;
     for (;;) {
         if (wc_cmd_prompt && js_want_save()) autosave();
         if ((k = js_key(wc_cmd_prompt)) >= 0) return k;
-        if (!wait) {                /* polling (explore, running): let the page paint */
-            if (emscripten_get_now() - last > 50) {
-                last = emscripten_get_now();
-                emscripten_sleep(0);
-            }
+        if (!wait) {                /* polling (auto-explore): paint each step */
+            emscripten_sleep(40);
             return -1;
         }
         emscripten_sleep(10);
