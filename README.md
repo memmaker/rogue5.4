@@ -13,8 +13,9 @@ Restoration Project: https://github.com/RoguelikeRestorationProject/rogue5.4/tre
   menu, inventory with a cursor, sound events (`rvip.c` + small hooks).
 - `web:` browser build (`web/build.sh`), played at https://ruzzoli.de/roguelikes/rogue54/
 
-Tile sets: NetHack (default) or DawnHack (DragonDePlatino, palette DawnBringer, CC BY 3.0,
-via Rogue Collection; `port/mkdawn.py`, credits in `port/dawnhack/CREDITS.txt`). Web: *Tiles* button;
+Tile sets: NetHack (default) or DawnLike (DragonDePlatino, palette DawnBringer, CC BY 4.0;
+sprites picked by name from `~/Games/rvip-tools/tilesets` by `port/mkdawn.py`, floors
+autotiled, *DawnLike|a* animated; it replaced the DawnHack cut of the same art). Web: *Tiles* button;
 desktop: `TILESET=dawn ./play.sh` or `echo dawn > save/tileset`.
 
 Build: `./configure && make rogue54-x11` (XQuartz), `./play.sh`; web: `sh web/build.sh`, `web/deploy.sh`.
