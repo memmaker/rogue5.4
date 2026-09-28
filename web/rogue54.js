@@ -81,8 +81,9 @@
 		c.fillStyle = inv ? FG : BG;
 		c.fillRect(px, py, T.cw, T.ch);
 		if (t >= 0 && tilesReady) {
-			if (u >= 0) c.drawImage(tiles, (u % 32) * 16, ((u / 32) | 0) * 16, 16, 16, px, py, T.cw, T.ch);
-			c.drawImage(tiles, (t % 32) * 16, ((t / 32) | 0) * 16, 16, 16, px, py, T.cw, T.ch);
+			var im = p === P_MAP && frame && tiles1.naturalWidth ? tiles1 : tiles;   /* DawnLike's 2nd frame */
+			if (u >= 0) c.drawImage(im, (u % 32) * 16, ((u / 32) | 0) * 16, 16, 16, px, py, T.cw, T.ch);
+			c.drawImage(im, (t % 32) * 16, ((t / 32) | 0) * 16, 16, 16, px, py, T.cw, T.ch);
 			return;
 		}
 		var ic = p === P_INV && T.rowIcon ? T.rowIcon[y] : -1;
@@ -155,6 +156,8 @@
 				if (s.font && d.wm && !d.wm.fs) { d.wm.fs = {}; ['msg', 'stat', 'inv', 'vis'].forEach(function (k) { if (s.font[k]) d.wm.fs[k] = s.font[k]; }); }   /* old layout: sizes move to the WM */
 				if (typeof s.face === 'string') d.face = s.face;
 				if (typeof s.mapFace === 'string') d.mapFace = s.mapFace;
+				if (typeof s.name === 'string') d.name = s.name;     /* the player's name (asked once) */
+				if (typeof s.tiles === 'string') d.tiles = s.tiles;  /* the tile set, by name */
 				if (s.audio) d.audio = { sound: s.audio.sound === true, music: s.audio.music === true };
 			}
 		} catch (err) { /* nothing saved yet */ }
@@ -247,8 +250,8 @@
 	}
 
 	function resetLayout() {
-		var a = L.audio, fc = L.face, mf = L.mapFace;
-		L = defaultLayout(); L.audio = a; L.face = fc; L.mapFace = mf; L.wm = wm.state();
+		var a = L.audio, fc = L.face, mf = L.mapFace, nm = L.name, ts = L.tiles;
+		L = defaultLayout(); L.audio = a; L.face = fc; L.mapFace = mf; L.name = nm; L.tiles = ts; L.wm = wm.state();
 		for (var p = 0; p < panes.length; p++) if (panes[p]) shape(p);
 		applyDom(); saveLayout();
 	}
@@ -401,20 +404,21 @@
 		xr: xr,
 		preRun: [function () {
 			var FS = Module.FS;
-			if (!tilesDone) { Module.addRunDependency('tiles'); tilesWait = true; }
+			Module.addRunDependency('tiles'); tilesWait = true;   /* the sheet loads once the layout says which */
 			FS.mkdirTree(DIR);
 			FS.mount(Module.IDBFS, {}, DIR);
 			FS.chdir('/rogue54');
 			Module.ENV.HOME = DIR;               /* rogue54.sav (md_gethomedir) */
 			Module.ENV.ROGUEHOME = DIR;          /* score file */
 			Module.ENV.USER = 'rogue';
-			var who = '';                        /* whoami: getpwuid() is web_user, so ask once */
-			try { who = localStorage.getItem('rogue54-name') || ''; } catch (err) { /* no storage */ }
-			if (!who) { who = (prompt('What is your name, adventurer?', '') || '').replace(/[,\n]/g, '').trim().slice(0, 30); try { if (who) localStorage.setItem('rogue54-name', who); } catch (err) { /* no storage */ } }
-			if (who) Module.ENV.ROGUEOPTS = 'name=' + who;
 			Module.addRunDependency('idbfs');
 			FS.syncfs(true, function (err) {
 				if (err) status('Could not read saved games from IndexedDB (' + err + '). Saving may not work in this browser mode.', true);
+				loadLayout();                    /* before the game: it holds the name and the tile set */
+				if (!L.name) { L.name = (prompt('What is your name, adventurer?', '') || '').replace(/[,\n]/g, '').trim().slice(0, 30); if (L.name) saveLayout(); }
+				if (L.name) Module.ENV.ROGUEOPTS = 'name=' + L.name;
+				TILESETS.forEach(function (t, i) { if (t[1] === L.tiles) tileset = i; });
+				startTiles();
 				Module.removeRunDependency('idbfs');
 			});
 		}],
@@ -435,12 +439,38 @@
 	tiles.onload = function () { tilesFinished(true); };
 	tiles.onerror = function () { tilesFinished(false); };
 	/* tile sets: same slot layout (port/mkdawn.py); the choice is a per-browser preference */
-	var TILESETS = [['tiles.png', 'NetHack'], ['tiles-dawn.png', 'DawnHack'], [null, 'None']], tileset = 0;
-	try { tileset = +localStorage.getItem('tileset') % TILESETS.length || 0; } catch (err) { /* no storage */ }
+	var TILESETS = [['tiles.png', 'NetHack'], ['tiles-dawn.png', 'DawnLike'], ['tiles-dawn.png', 'DawnLike|a', 'tiles-dawn-1.png'], [null, 'None']], tileset = 0;
+	/* animation (opt-in, "DawnLike|a"): the map swaps to the frame-1 sheet
+	 * (port/mkdawn.py) twice a second, redrawing only cells whose sprite has
+	 * a different 2nd frame (anim[slot], found by comparing the two sheets) */
+	var tiles1 = new Image(), frame = 0, anim = null;
+	function loadFrame1() { frame = 0; anim = null; if (TILESETS[tileset][2]) tiles1.src = TILESETS[tileset][2]; else tiles1.removeAttribute('src'); }
+	function pixels(im) {
+		var c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+		var x = c.getContext('2d'); x.drawImage(im, 0, 0); return x.getImageData(0, 0, c.width, c.height).data;
+	}
+	function findAnim() {
+		if (!tiles.naturalWidth || !tiles1.naturalWidth) return;
+		var a = pixels(tiles), b = pixels(tiles1), W = tiles.naturalWidth, n = (W / 16) * (tiles.naturalHeight / 16);
+		anim = new Uint8Array(n);
+		for (var s = 0; s < n; s++)
+			for (var y = 0, x0 = (s % (W / 16)) * 16, y0 = ((s / (W / 16)) | 0) * 16; y < 16 && !anim[s]; y++)
+				for (var i = ((y0 + y) * W + x0) * 4, e = i + 64; i < e; i++) if (a[i] !== b[i]) { anim[s] = 1; break; }
+	}
+	tiles1.onload = findAnim;
+	setInterval(function () {
+		var T = panes[P_MAP];
+		if (!T || !tilesReady || !TILESETS[tileset][2] || document.hidden) return;
+		if (!anim) findAnim();
+		if (!anim) return;
+		frame ^= 1;
+		for (var i = 0; i < T.cols * T.rows; i++) if (anim[T.t[i]] || anim[T.u[i]]) draw(P_MAP, (i / T.cols) | 0, i % T.cols);
+		drawCursor();
+	}, 500);
 	function renderTileset() { var b = $('btn-tiles'); if (b) b.textContent = 'Tiles: ' + TILESETS[tileset][1]; }
 	function toggleTileset() {
 		tileset = (tileset + 1) % TILESETS.length;
-		try { localStorage.setItem('tileset', tileset); } catch (err) { /* no storage */ }
+		L.tiles = TILESETS[tileset][1]; saveLayout();
 		renderTileset();
 		var redraw = function () {
 			[P_MAP, P_INV].forEach(function (p) { if (panes[p]) shape(p); });
@@ -450,6 +480,7 @@
 			applyDom();
 		};
 		renderMapSel();
+		loadFrame1();
 		if (!TILESETS[tileset][0]) { tilesReady = false; redraw(); return; }   /* text mode */
 		tiles.onload = function () { if (TILESETS[tileset][0]) { tilesReady = true; redraw(); } };
 		tiles.src = TILESETS[tileset][0];
@@ -480,7 +511,11 @@
 		s.style.cssText = 'image-rendering:pixelated;background:url(' + tiles.src + ') -' + (t % 32) * 16 + 'px -' + ((t / 32) | 0) * 16 + 'px';
 		return s;
 	}
-	if (TILESETS[tileset][0]) tiles.src = TILESETS[tileset][0]; else tilesDone = true;
+	function startTiles() {
+		renderTileset(); loadFrame1();
+		if (TILESETS[tileset][0]) tiles.src = TILESETS[tileset][0];
+		else { tilesDone = true; if (tilesWait) Module.removeRunDependency('tiles'); }   /* None: text */
+	}
 
 	/* autosave: every 2 minutes and when the page is hidden */
 	setInterval(function () { saveReq = true; }, 120000);
